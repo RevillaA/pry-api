@@ -4,7 +4,7 @@ import 'base_datasource.dart';
 import '../models/producto_model.dart';
 
 class ProductoApiDataSource implements BaseDataSource{
-  final String baseUrl = "http://10.240.1.14:3000/api/productos";
+  final String baseUrl = "http://192.168.1.39:3000/api/productos";
 
   @override
   Future<List<ProductoModel>> fetchProductos() async {
@@ -16,6 +16,10 @@ class ProductoApiDataSource implements BaseDataSource{
     }
 
     final List data = json.decode(resp.body);
+
+    if (data.isNotEmpty) {
+      print("Ejemplo de producto recibido: ${data[0]}");
+    }
 
     return data.map((item)=>ProductoModel.fromJson(item)).toList();
   }
@@ -43,16 +47,18 @@ class ProductoApiDataSource implements BaseDataSource{
 
   @override
   Future<ProductoModel> updateProductos(String id, Map<String, dynamic> data) async {
-    final resp= await http.put(
+    final resp = await http.put(
       Uri.parse("$baseUrl/$id"),
-      headers: {"Context Type": "application/json"},
+      headers: {"Content-Type": "application/json"},
       body: json.encode(data),
     );
 
-    if (resp.statusCode != 201){
-      throw Exception("Error al obtener productos");
-    }
+    print("Status Code PUT: ${resp.statusCode}");
+    print("Response Body: ${resp.body}");
 
+    if (resp.statusCode != 200 && resp.statusCode != 201) {
+      throw Exception("Error al actualizar producto. Status: ${resp.statusCode}");
+    }
     return ProductoModel.fromJson(json.decode(resp.body));
   }
 }
